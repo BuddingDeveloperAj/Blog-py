@@ -7,7 +7,9 @@
       <div class="row">
         <div class="col-lg-8 col-md-10 mx-auto">
           <div class="site-heading">
-            <h1 style="color: #002B5B">Ajay's Blog</h1>
+            <h1 style="color: #002B5B; font-family: 'Sacramento', cursive;">Scribble it!</h1>
+
+
             <span class="subheading" style="color: #3D3C42">A collection of random musings.</span>
           </div>
         </div>
@@ -32,8 +34,8 @@
           <p class="post-meta">Posted by
             <a href="#">{{post.author.name}}</a>
             on {{post.date}}
-            {% if current_user.id == 1: %}
-            <a href="{{url_for('delete_post', post_id=post.id) }}">✘</a>
+            {% if current_user.id == post.author.id: %}
+            <a href="{{url_for('delete_post', post_id=post.id) }}">❌</a>
             {% endif %}
           </p>
         </div>
@@ -42,7 +44,7 @@
 
 
         <!-- New Post -->
-        {% if current_user.id == 1: %}
+        {% if current_user.is_authenticated: %}
         <div class="clearfix">
           <a class="btn btn-primary float-right" href="{{url_for('add_new_post')}}">Create New Post</a>
         </div>

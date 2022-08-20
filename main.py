@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, url_for, flash, abort
+from flask import Flask, render_template, redirect, url_for, flash, abort, request
 from flask_bootstrap import Bootstrap
 from flask_ckeditor import CKEditor
 from datetime import date
@@ -10,6 +10,7 @@ from flask_login import UserMixin, login_user, LoginManager, login_required, cur
 from flask_gravatar import Gravatar
 from forms import RegisterForm, CreatePostForm, LoginForm, CommentForm
 import os
+import smtplib
 
 
 app = Flask(__name__)
@@ -26,12 +27,13 @@ db = SQLAlchemy(app)
 
 def admin_only(f):
     @wraps(f)
-    def decorated_function(*args, **kwargs):
-        #If id is not 1 then return abort with 403 error
-        if current_user.id != 1:
+    def decorated_function(post_id):
+        #If id is same as post author id then return abort with 403 error
+        post = BlogPost.query.get(post_id)
+        if current_user.id != post.author_id:
             return abort(403)
         #Otherwise continue with the route function
-        return f(*args, **kwargs)
+        return f(post_id)
     return decorated_function
 
 
@@ -168,13 +170,34 @@ def about():
     return render_template("about.html", current_user=current_user)
 
 
-@app.route("/contact")
+@app.route("/contact", methods=["GET", "POST"])
 def contact():
+
+    if request.method == "POST":
+        name = request.form.get("name")
+        phone = request.form.get("email")
+        email = request.form.get("phone")
+        message = request.form.get("message")
+        send_email(name, phone, email, message)
+        return render_template("contact.html", msg_sent=True)
     return render_template("contact.html", current_user=current_user)
 
 
+def send_email(name, email, phone, message):
+    email_message = f"Subject:New Message\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage:{message}"
+    with smtplib.SMTP("smtp.gmail.com") as connection:
+        connection = smtplib.SMTP("smtp.gmail.com")
+        connection.starttls()
+        connection.login(user="emailfortestingdeveloper@gmail.com", password="vvdkvolwfmfgadst")
+        connection.sendmail(
+            from_addr="emailfortestingdeveloper@gmail.com",
+            to_addrs="emailfortestingdeveloper@gmail.com",
+            msg=email_message
+        )
+
+
 @app.route("/new-post", methods=["POST", "GET"])
-@admin_only
+@login_required
 def add_new_post():
     form = CreatePostForm()
     if form.validate_on_submit():

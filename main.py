@@ -172,19 +172,20 @@ def about():
 
 @app.route("/contact", methods=["GET", "POST"])
 def contact():
-
     if request.method == "POST":
         name = request.form.get("name")
+        print(name)
         phone = request.form.get("email")
         email = request.form.get("phone")
         message = request.form.get("message")
         send_email(name, phone, email, message)
+        print(message)
         return render_template("contact.html", msg_sent=True)
     return render_template("contact.html", current_user=current_user)
 
 
 def send_email(name, email, phone, message):
-    email_message = f"Subject:New Message\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage:{message}"
+    email_message = f"Subject:Scribble it! Contact\n\nName: {name}\nEmail: {email}\nPhone: {phone}\nMessage:{message}"
     with smtplib.SMTP("smtp.gmail.com") as connection:
         connection = smtplib.SMTP("smtp.gmail.com")
         connection.starttls()
